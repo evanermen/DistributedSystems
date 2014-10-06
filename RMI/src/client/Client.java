@@ -2,10 +2,12 @@ package client;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import rental.Car;
 import rental.CarRentalCompany;
 import rental.CarType;
 import rental.Quote;
@@ -102,8 +104,8 @@ public class Client extends AbstractScriptedSimpleTest {
 	 */
 	@Override
 	protected Reservation confirmQuote(Quote quote) throws Exception {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("TODO");
+		Reservation reservation = company.confirmQuote(quote);
+		return reservation;
 	}
 	
 	/**
@@ -118,8 +120,20 @@ public class Client extends AbstractScriptedSimpleTest {
 	 */
 	@Override
 	protected List<Reservation> getReservationsBy(String clientName) throws Exception {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("TODO");
+		List<Reservation> reservations = new ArrayList<Reservation>();
+		
+		List<Car> cars = company.getAllCars();
+		for(Car car: cars) {
+			List<Reservation> temp = car.getAllReservations();
+			for(Reservation reservation: temp) {
+				if(reservation.getCarRenter().equals(clientName)) {
+					reservations.add(reservation);
+				}
+			}
+		}
+		
+		return reservations;
+		
 	}
 
 	/**

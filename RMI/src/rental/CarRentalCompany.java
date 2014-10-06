@@ -87,6 +87,10 @@ public class CarRentalCompany implements Remote, Serializable {
 	 * CARS *
 	 *********/
 	
+	public List<Car> getAllCars() {
+		return this.cars;
+	}
+	
 	private Car getCar(int uid) {
 		for (Car car : cars) {
 			if (car.getId() == uid)

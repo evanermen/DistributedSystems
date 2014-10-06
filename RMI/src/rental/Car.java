@@ -39,6 +39,10 @@ public class Car {
     /****************
      * RESERVATIONS *
      ****************/
+    
+    public List<Reservation> getAllReservations() {
+    	return reservations;
+    }
 
     public boolean isAvailable(Date start, Date end) {
         if(!start.before(end))
