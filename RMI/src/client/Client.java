@@ -2,56 +2,52 @@ package client;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
-import rental.Car;
-import rental.CarRentalCompany;
-import rental.CarType;
+import rental.ICarRentalCompany;
 import rental.Quote;
 import rental.Reservation;
 import rental.ReservationConstraints;
 
 public class Client extends AbstractScriptedSimpleTest {
-	
-	private CarRentalCompany company;
-	
-	
+
+	private ICarRentalCompany company;
+
+
 	/********
 	 * MAIN *
 	 ********/
-	
+
 	public static void main(String[] args) throws Exception {
-		if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }
-        try {
-        	String carRentalCompanyName = "Hertz";
-        	
-            Registry registry = LocateRegistry.getRegistry(args[0]);
-            CarRentalCompany companyObject = (CarRentalCompany) registry.lookup(carRentalCompanyName);
-            
-         // An example reservation scenario on car rental company 'Hertz' would be...
-    		Client client = new Client("simpleTrips", companyObject);
-    		client.run();
-        } catch (Exception e) {
-            System.err.println("Client exception:");
-            e.printStackTrace();
-        }
-    }    
-		
-	
+		if (System.getSecurityManager() != null) {
+			System.setSecurityManager(null);
+		}
+		try {
+			String carRentalCompanyName = "Hertz";
+
+			Registry registry = LocateRegistry.getRegistry("localhost"); //stond argument: args[0]
+			ICarRentalCompany companyObject = (ICarRentalCompany) registry.lookup(carRentalCompanyName);
+
+			// An example reservation scenario on car rental company 'Hertz' would be...
+			Client client = new Client("simpleTrips", companyObject);
+			client.run();
+		} catch (Exception e) {
+			System.err.println("Client exception:");
+			e.printStackTrace();
+		}
+	}    
+
+
 	/***************
 	 * CONSTRUCTOR *
 	 ***************/
-	
-	public Client(String scriptFile, CarRentalCompany company) {
+
+	public Client(String scriptFile, ICarRentalCompany company) {
 		super(scriptFile);
 		this.company = company;
 	}
-	
+
 	/**
 	 * Check which car types are available in the given period
 	 * and print this list of car types.
@@ -65,8 +61,8 @@ public class Client extends AbstractScriptedSimpleTest {
 	 */
 	@Override
 	protected void checkForAvailableCarTypes(Date start, Date end) throws Exception {
-		Set<CarType> types = company.getAvailableCarTypes(start, end);
-		System.out.println(types.toString());
+		String types = company.getAvailableCarTypesString(start, end);
+		System.out.println(types);
 	}
 
 	/**
@@ -107,7 +103,7 @@ public class Client extends AbstractScriptedSimpleTest {
 		Reservation reservation = company.confirmQuote(quote);
 		return reservation;
 	}
-	
+
 	/**
 	 * Get all reservations made by the given client.
 	 *
@@ -120,20 +116,8 @@ public class Client extends AbstractScriptedSimpleTest {
 	 */
 	@Override
 	protected List<Reservation> getReservationsBy(String clientName) throws Exception {
-		List<Reservation> reservations = new ArrayList<Reservation>();
-		
-		List<Car> cars = company.getAllCars();
-		for(Car car: cars) {
-			List<Reservation> temp = car.getAllReservations();
-			for(Reservation reservation: temp) {
-				if(reservation.getCarRenter().equals(clientName)) {
-					reservations.add(reservation);
-				}
-			}
-		}
-		
-		return reservations;
-		
+		return company.getReservationsBy(clientName);
+
 	}
 
 	/**
@@ -148,7 +132,6 @@ public class Client extends AbstractScriptedSimpleTest {
 	 */
 	@Override
 	protected int getNumberOfReservationsForCarType(String carType) throws Exception {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("TODO");
+		return company.getNumberOfReservationsForCarType(carType);
 	}
 }

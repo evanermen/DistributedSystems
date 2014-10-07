@@ -14,18 +14,18 @@ import java.rmi.server.UnicastRemoteObject;
 public class RentalServer {
 
 	public static void main(String[] args) throws ReservationException, NumberFormatException, IOException {
-		 if (System.getSecurityManager() == null) {
-	            System.setSecurityManager(new SecurityManager());
+		 if (System.getSecurityManager() != null) {
+	            System.setSecurityManager(null);
 	        }
 	        try {
 	            String name = "Hertz";
 	            List<Car> cars = loadData("hertz.csv");
 	            CarRentalCompany company = new CarRentalCompany("Hertz", cars);
 	            
-	            CarRentalCompany stub =
-	                (CarRentalCompany) UnicastRemoteObject.exportObject(company, 0);
+	            ICarRentalCompany remoteRentalServer =
+	                (ICarRentalCompany) UnicastRemoteObject.exportObject(company, 0); //port 1099
 	            Registry registry = LocateRegistry.getRegistry();
-	            registry.rebind(name, stub);
+	            registry.rebind(name, remoteRentalServer); //rebind overschrijft
 	            System.out.println("CarRentalCompany bound");
 	        } catch (Exception e) {
 	            System.err.println("CarRentalCompany exception:");

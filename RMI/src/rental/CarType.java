@@ -1,8 +1,10 @@
 package rental;
 
+import java.io.Serializable;
+
 public class CarType {
-    
-    private String name;
+	
+	private String name;
     private int nbOfSeats;
     private boolean smokingAllowed;
     private double rentalPricePerDay;

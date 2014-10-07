@@ -1,5 +1,6 @@
 package rental;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,16 +12,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import java.io.Serializable;
-import java.rmi.Remote;
+public class CarRentalCompany implements ICarRentalCompany {
 
-public class CarRentalCompany implements Remote, Serializable {
-
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	private static Logger logger = Logger.getLogger(CarRentalCompany.class.getName());
 	
@@ -73,6 +66,7 @@ public class CarRentalCompany implements Remote, Serializable {
 		throw new IllegalArgumentException("<" + carTypeName + "> No car type of name " + carTypeName);
 	}
 	
+	
 	public Set<CarType> getAvailableCarTypes(Date start, Date end) {
 		Set<CarType> availableCarTypes = new HashSet<CarType>();
 		for (Car car : cars) {
@@ -87,8 +81,32 @@ public class CarRentalCompany implements Remote, Serializable {
 	 * CARS *
 	 *********/
 	
-	public List<Car> getAllCars() {
-		return this.cars;
+	/**
+	 * Get all reservations made by the given client.
+	 *
+	 * @param 	clientName
+	 * 			name of the client
+	 * @return	the list of reservations of the given client
+	 * 
+	 * @throws 	Exception
+	 * 			if things go wrong, throw exception
+	 */
+	@Override
+	public List<Reservation> getReservationsBy(String clientName) {
+		List<Reservation> reservations = new ArrayList<Reservation>();
+
+		List<Car> cars = this.cars;
+		for(Car car: cars) {
+			List<Reservation> temp = car.getAllReservations();
+			for(Reservation reservation: temp) {
+				if(reservation.getCarRenter().equals(clientName)) {
+					reservations.add(reservation);
+				}
+			}
+		}
+
+		return reservations;
+
 	}
 	
 	private Car getCar(int uid) {
@@ -112,7 +130,30 @@ public class CarRentalCompany implements Remote, Serializable {
 	/****************
 	 * RESERVATIONS *
 	 ****************/
+	
+	/**
+	 * Get the number of reservations for a particular car type.
+	 * 
+	 * @param 	carType 
+	 * 			name of the car type
+	 * @return 	number of reservations for the given car type
+	 * 
+	 * @throws 	Exception
+	 * 			if things go wrong, throw exception
+	 */
+	@Override
+	public int getNumberOfReservationsForCarType(String carType) {
+		List<Car> cars = this.cars;
+		int number = 0;
+		for(Car car: cars) {
+			if(car.getType().getName().equals(carType)){
+				number = number + car.getAllReservations().size();
+			}
+		}
+		return number;
+	}
 
+	@Override
 	public Quote createQuote(ReservationConstraints constraints, String client)	throws ReservationException {
 		logger.log(Level.INFO, "<{0}> Creating tentative reservation for {1} with constraints {2}", 
                         new Object[]{name, client, constraints.toString()});
@@ -150,5 +191,11 @@ public class CarRentalCompany implements Remote, Serializable {
 	public void cancelReservation(Reservation res) {
 		logger.log(Level.INFO, "<{0}> Cancelling reservation {1}", new Object[]{name, res.toString()});
 		getCar(res.getCarId()).removeReservation(res);
+	}
+
+	public String getAvailableCarTypesString(Date start, Date end) {
+		Set<CarType> types = this.getAvailableCarTypes(start, end); // Date is serializable
+		return types.toString();
+		
 	}
 }
